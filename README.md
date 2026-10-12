@@ -104,11 +104,11 @@ The static output directory is **dist**. There is no server runtime. Pages’ SP
 ```sh
 npx wrangler login
 npm run build
-npx wrangler pages project create stockpilot-demo --production-branch main
+npx wrangler pages project create stockpilot-demo --production-branch main --force
 npx wrangler pages deploy dist --project-name stockpilot-demo --branch main
 ```
 
-Create the project once. The configured project uses direct upload, with no automatic GitHub deployment hook. Redeploy after source changes. Never commit credentials; Wrangler OAuth lives outside the repository.
+Create the project once. Wrangler 4.149 required `--force` at initial project creation to select Cloudflare Pages instead of its new Workers delegation. Subsequent deployments use the existing Pages project without that flag. The project uses direct upload, with no automatic GitHub deployment hook. Redeploy after source changes. Never commit credentials; Wrangler OAuth lives outside the repository.
 
 ## Portfolio materials
 

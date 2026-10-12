@@ -1179,7 +1179,7 @@ dialog {
 }
 dialog::backdrop {
   background: #13271d65;
-  backdrop-filter: blur(3px);
+  backdrop-filter: none;
 }
 .modal-head {
   display: flex;
@@ -2615,4 +2615,13 @@ th {
   .sidebar nav a {
     font-size: 13px;
   }
+}
+[data-theme="dark"] .demo-bar button {
+  color: #aac6a7;
+}
+[data-theme="dark"] .negative {
+  color: #e1ad87;
+}
+[data-theme="dark"] .positive {
+  color: #9bd0b0;
 }

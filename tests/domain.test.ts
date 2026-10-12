@@ -221,6 +221,7 @@ describe("inventory transaction rules", () => {
       '"\'=cmd","a,""b""\nc","2"',
     );
     expect(csv([])).toBe("");
+    expect(csv([{ Delta: -3, Cost: 2.5 }])).toContain('"-3","2.5"');
   });
   it("seed restores original sample balances and schema", () => {
     const a = seed(),

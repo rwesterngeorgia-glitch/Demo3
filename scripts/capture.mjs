@@ -1,4 +1,4 @@
-import { chromium } from "@playwright/test";
+import { chromium, expect } from "@playwright/test";
 import fs from "node:fs/promises";
 const origin = process.env.BASE_URL || "http://127.0.0.1:5174";
 await fs.mkdir("marketing/screenshots", { recursive: true });
@@ -21,6 +21,14 @@ for (const [name, path] of [
   await page.evaluate(() => document.fonts.ready);
   await page.screenshot({ path: `marketing/screenshots/${name}.png` });
   console.log("Captured", name);
+  if (name === "dashboard") {
+    await page
+      .getByRole("button", { name: "Take a guided tour", exact: true })
+      .click();
+    await page.locator(".guided-tour").waitFor();
+    await page.screenshot({ path: "marketing/screenshots/guided-tour.png" });
+    await page.getByRole("button", { name: "End tour", exact: true }).click();
+  }
 }
 await fs.copyFile(
   "marketing/screenshots/dashboard.png",
@@ -36,6 +44,17 @@ await page.screenshot({ path: "marketing/screenshots/tablet.png" });
 await page.setViewportSize({ width: 390, height: 844 });
 await page.goto(origin + "/app/inventory");
 await page.screenshot({ path: "marketing/screenshots/mobile.png" });
+await page.goto(origin + "/app");
+await page
+  .getByRole("button", { name: "Open navigation", exact: true })
+  .click();
+await page
+  .getByRole("button", { name: "Take a guided tour", exact: true })
+  .click();
+await page.locator(".guided-tour").waitFor();
+await expect(page.locator(".sidebar")).not.toBeInViewport();
+await page.screenshot({ path: "marketing/screenshots/mobile-tour.png" });
+await page.getByRole("button", { name: "End tour", exact: true }).click();
 await page.setViewportSize({ width: 1440, height: 1000 });
 await page.goto(origin + "/");
 await page.screenshot({

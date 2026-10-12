@@ -159,6 +159,7 @@ function Workspace() {
   const current =
     nav.find((n) => n.path === location.pathname)?.name || "Workspace";
   const startTour = () => {
+    setLoc("All locations");
     setTour(0);
     navigate("/app");
     setMobile(false);
@@ -331,11 +332,13 @@ function Workspace() {
             <Route path="inventory" element={<Inventory {...props} />} />
             <Route
               path="orders"
-              element={<Purchasing actor={actor} notify={notify} />}
+              element={<Purchasing actor={actor} notify={notify} loc={loc} />}
             />
             <Route
               path="suppliers"
-              element={<Purchasing actor={actor} notify={notify} directory />}
+              element={
+                <Purchasing actor={actor} notify={notify} loc={loc} directory />
+              }
             />
             <Route path="recipes" element={<Recipes {...props} />} />
             <Route path="waste" element={<Waste {...props} />} />

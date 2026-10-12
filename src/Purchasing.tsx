@@ -9,10 +9,12 @@ export default function Purchasing({
   actor,
   notify,
   directory = false,
+  loc = "All locations",
 }: {
   actor: string;
   notify: (s: string) => void;
   directory?: boolean;
+  loc?: string;
 }) {
   const { state, dispatch } = useStore(),
     [create, setCreate] = useState(false),
@@ -20,7 +22,10 @@ export default function Purchasing({
     [filter, setFilter] = useState("All statuses"),
     [supplierFilter, setSupplierFilter] = useState("All suppliers"),
     [cancel, setCancel] = useState<Order | null>(null);
-  const orders = state.orders.filter(
+  const locationOrders = state.orders.filter(
+    (o) => loc === "All locations" || o.location === loc,
+  );
+  const orders = locationOrders.filter(
     (o) =>
       (filter === "All statuses" || o.status === filter) &&
       (supplierFilter === "All suppliers" || o.supplier === supplierFilter),
@@ -45,7 +50,7 @@ export default function Purchasing({
       {directory ? (
         <div className="supplier-grid">
           {state.suppliers.map((s) => {
-            const orders = state.orders.filter((o) => o.supplier === s.id);
+            const orders = locationOrders.filter((o) => o.supplier === s.id);
             return (
               <article className="panel supplier" key={s.id}>
                 <span className="supplier-logo">
@@ -107,7 +112,7 @@ export default function Purchasing({
               <span>Open orders</span>
               <strong>
                 {
-                  state.orders.filter((o) =>
+                  locationOrders.filter((o) =>
                     ["Ordered", "Partially received"].includes(o.status),
                   ).length
                 }
@@ -117,7 +122,7 @@ export default function Purchasing({
               <span>Outstanding value</span>
               <strong>
                 {money(
-                  state.orders
+                  locationOrders
                     .filter((o) =>
                       ["Ordered", "Partially received"].includes(o.status),
                     )
@@ -137,7 +142,7 @@ export default function Purchasing({
               <span>Received value</span>
               <strong>
                 {money(
-                  state.orders.reduce(
+                  locationOrders.reduce(
                     (n, o) =>
                       n +
                       o.lines.reduce((sum, l) => sum + l.received * l.cost, 0),
@@ -294,6 +299,7 @@ export default function Purchasing({
       )}
       {create && (
         <OrderForm
+          initialLocation={loc === "All locations" ? "Storage room" : loc}
           supplier={supplierFilter === "All suppliers" ? "s1" : supplierFilter}
           actor={actor}
           onClose={() => setCreate(false)}
@@ -345,10 +351,12 @@ export default function Purchasing({
   );
 }
 function OrderForm({
+  initialLocation,
   supplier,
   onClose,
   onSaved,
 }: {
+  initialLocation: string;
   supplier: string;
   actor: string;
   onClose: () => void;
@@ -356,7 +364,7 @@ function OrderForm({
 }) {
   const { state, dispatch } = useStore(),
     [sid, setSid] = useState(supplier),
-    [loc, setLoc] = useState("Storage room"),
+    [loc, setLoc] = useState(initialLocation),
     [expected, setExpected] = useState(day(3)),
     [draft, setDraft] = useState(false),
     [error, setError] = useState("");

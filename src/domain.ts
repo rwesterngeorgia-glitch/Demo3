@@ -277,7 +277,7 @@ export function csv(rows: Record<string, unknown>[]) {
   const keys = Object.keys(rows[0]);
   const escape = (v: unknown) => {
     let t = String(v ?? "");
-    if (/^[=+@\-\t\r]/.test(t)) t = "'" + t;
+    if (typeof v === "string" && /^[=+@\-\t\r]/.test(t)) t = "'" + t;
     return '"' + t.replaceAll('"', '""') + '"';
   };
   return (

@@ -14,6 +14,8 @@ All assets describe StockPilot as a **concept/prototype developed for our agency
 | `screenshots/mobile.png` | Mobile inventory workflow at 390px |
 | `screenshots/tablet.png` | Tablet overview at 834px |
 | `screenshots/landing.png` | Full public portfolio page |
+| `screenshots/guided-tour.png` | Clear desktop workspace with interactive guide and highlight |
+| `screenshots/mobile-tour.png` | Non-blocking guided tour on mobile |
 
 ## Instagram carousel
 
