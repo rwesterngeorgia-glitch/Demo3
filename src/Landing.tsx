@@ -80,7 +80,9 @@ export default function Landing() {
               aria-label="Launch StockPilot overview"
             >
               <img
-                src="/screenshots/dashboard.png"
+                src="/screenshots/dashboard-1200.webp"
+            srcSet="/screenshots/dashboard-640.webp 640w, /screenshots/dashboard-1200.webp 1200w, /screenshots/dashboard-1800.webp 1440w"
+            sizes="(max-width: 800px) 94vw, 60vw" width="1440" height="1000"
                 alt="StockPilot dashboard showing real demo inventory values, recorded consumption, and actionable stock alerts"
               />
               <span className="preview-overlay">
@@ -181,7 +183,9 @@ export default function Landing() {
             </small>
           </div>
           <img
-            src="/screenshots/recipes.png"
+            src="/screenshots/recipes-1200.webp"
+            srcSet="/screenshots/recipes-640.webp 640w, /screenshots/recipes-1200.webp 1200w, /screenshots/recipes-1800.webp 1440w"
+            sizes="(max-width: 800px) 94vw, 60vw" width="1440" height="1000"
             alt="StockPilot recipe costing with ingredient costs, menu prices, target percentages, and theoretical margins"
             loading="lazy"
           />

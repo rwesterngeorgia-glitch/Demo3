@@ -111,6 +111,7 @@ export type Action =
       actor: string;
     }
   | { type: "archive"; id: string }
+  | { type: "restore"; id: string }
   | {
       type: "move";
       product: string;

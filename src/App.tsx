@@ -1,4 +1,4 @@
-import { useEffect, useState, Component, type ReactNode } from "react";
+import { useEffect, useState, Component, Suspense, lazy, type ReactNode } from "react";
 import {
   Link,
   NavLink,
@@ -38,7 +38,10 @@ import Inventory, { ProductForm } from "./Inventory";
 import Purchasing from "./Purchasing";
 import Recipes from "./Recipes";
 import Operations from "./Operations";
-import { Overview, Waste, Reports, Alerts, activeProducts } from "./Analytics";
+const Overview = lazy(() => import('./Analytics').then(m => ({default:m.Overview})));
+const Waste = lazy(() => import('./Analytics').then(m => ({default:m.Waste})));
+const Reports = lazy(() => import('./Analytics').then(m => ({default:m.Reports})));
+const Alerts = lazy(() => import('./Analytics').then(m => ({default:m.Alerts})));
 import { quantity } from "./domain";
 const nav = [
   { path: "/app", name: "Overview", icon: LayoutDashboard },
@@ -70,7 +73,7 @@ class ErrorBoundary extends Component<
         <button
           className="button primary"
           onClick={() => {
-            localStorage.removeItem("stockpilot-demo-v1");
+            try {localStorage.removeItem("stockpilot-demo-v1");localStorage.removeItem("stockpilot-demo-v1-recovery");}catch { /* Reload can still start a memory-only workspace. */ }
             window.location.reload();
           }}
         >
@@ -104,7 +107,7 @@ export default function App() {
   );
 }
 function Workspace() {
-  const { state, warning, reset } = useStore(),
+  const { state, warning, reset, exportRecovery } = useStore(),
     location = useLocation(),
     navigate = useNavigate();
   const [loc, setLoc] = useState("All locations"),
@@ -125,7 +128,7 @@ function Workspace() {
     [tour, setTour] = useState<number | null>(null),
     [toast, setToast] = useState("");
   const alertCount =
-    activeProducts(state).filter((p) => quantity(state, p.id, loc) < p.min)
+    state.products.filter(p => !p.archived).filter((p) => quantity(state, p.id, loc) < p.min)
       .length + state.tasks.filter((t) => !t.done).length;
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? "dark" : "light";
@@ -313,7 +316,7 @@ function Workspace() {
             <strong>Portfolio Demo</strong>
             <span className="demo-description">
               {" "}
-              · Fictional data. Changes affect this browser only.
+              · Fictional data · saved in this browser. Roles are simulated.
             </span>
           </span>
           <button onClick={() => setResetOpen(true)}>
@@ -322,12 +325,13 @@ function Workspace() {
           </button>
         </div>
         {warning && (
-          <p role="alert" className="error storage-warning">
+          <div role="alert" className="error storage-warning">
             {warning}
-          </p>
+            <button className="button" onClick={exportRecovery}>Download saved data</button>
+          </div>
         )}
         <main id="workspace-content" className="content">
-          <Routes>
+          <Suspense fallback={<p role="status">Loading workspace…</p>}><Routes>
             <Route index element={<Overview {...props} />} />
             <Route path="inventory" element={<Inventory {...props} />} />
             <Route
@@ -357,7 +361,7 @@ function Workspace() {
                 </div>
               }
             />
-          </Routes>
+          </Routes></Suspense>
           <footer className="app-footer">
             <span>
               <span className="dot" />

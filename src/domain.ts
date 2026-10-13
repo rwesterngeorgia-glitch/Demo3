@@ -1,5 +1,6 @@
 import type { Action, Movement, Product, Recipe, State } from "./types";
 import { locations } from "./types";
+import { validDate } from "./dates";
 export const uid = () => crypto.randomUUID();
 export const round = (n: number) => Math.round(n * 1e6) / 1e6;
 export const eventDay = (value: string) => {
@@ -129,6 +130,7 @@ export function applyAction(state: State, a: Action): State {
     case "archive":
       product(a.id).archived = true;
       break;
+    case "restore": { const p=s.products.find(p=>p.id===a.id);if(!p)throw Error("Inventory item not found.");p.archived=false;break; }
     case "move": {
       const p = product(a.product);
       if (!a.reason.trim()) throw Error("Add a reason for the audit trail.");
@@ -164,7 +166,7 @@ export function applyAction(state: State, a: Action): State {
       if (
         !s.suppliers.some((x) => x.id === o.supplier) ||
         !locations.includes(o.location as (typeof locations)[number]) ||
-        !/^\d{4}-\d{2}-\d{2}$/.test(o.expected) ||
+        !validDate(o.expected) ||
         !o.lines.length
       )
         throw Error(

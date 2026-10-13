@@ -281,10 +281,11 @@ function RecipeForm({
         price: 14,
         target: 25,
         note: "",
-        ingredients: [{ product: "p1", quantity: 30, unit: "ml" }],
+        ingredients: [{ product: state.products.find(p=>!p.archived)?.id || "", quantity: 1, unit: state.products.find(p=>!p.archived)?.unit || "each" }],
       },
     ),
     [error, setError] = useState("");
+  if(!state.products.some(p=>!p.archived) || r.ingredients.some(i=>state.products.find(p=>p.id===i.product)?.archived)) return <Modal title="Restore inventory items" onClose={onClose}><p>Restore archived ingredients in Inventory before creating or editing this recipe. Use “Show archived items”, then Restore.</p><button className="button" onClick={onClose}>Close</button></Modal>;
   return (
     <Modal title={recipe ? "Edit recipe" : "Create recipe"} onClose={onClose}>
       <form
@@ -422,7 +423,7 @@ function RecipeForm({
               ...r,
               ingredients: [
                 ...r.ingredients,
-                { product: "p1", quantity: 30, unit: "ml" },
+                { product: state.products.find(p=>!p.archived)?.id || "", quantity: 1, unit: state.products.find(p=>!p.archived)?.unit || "each" },
               ],
             })
           }

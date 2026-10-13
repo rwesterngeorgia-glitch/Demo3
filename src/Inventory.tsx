@@ -47,7 +47,7 @@ export function ProductForm({
       cost: 0,
       price: 0,
       min: 5,
-      supplier: "s1",
+      supplier: state.suppliers[0]?.id || "",
       storage: "Storage room",
       icon: "Spirits",
       archived: false,
@@ -245,7 +245,7 @@ export function MovementForm({
 }) {
   const { state, dispatch } = useStore(),
     [id, setId] = useState(
-      product?.id || state.products.find((p) => !p.archived)!.id,
+      product?.id || state.products.find((p) => !p.archived)?.id || "",
     ),
     [source, setSource] = useState(loc === "All locations" ? "Main bar" : loc),
     [dest, setDest] = useState("Storage room"),
@@ -254,7 +254,8 @@ export function MovementForm({
     [unit, setUnit] = useState(""),
     [reason, setReason] = useState(kind === "Waste" ? "Spoilage" : ""),
     [error, setError] = useState("");
-  const p = state.products.find((p) => p.id === id)!;
+  const p = state.products.find((p) => p.id === id && !p.archived);
+  if (!p) return <Modal title="No active inventory items" onClose={onClose}><p>Add an inventory item or restore an archived item before recording a movement.</p><button className="button" onClick={onClose}>Close</button></Modal>;
   const units = [
     p.unit,
     "case",
@@ -445,11 +446,12 @@ export default function Inventory({
     [desc, setDesc] = useState(false),
     [edit, setEdit] = useState<Product | "new" | null>(null),
     [move, setMove] = useState<Product | "new" | null>(null),
-    [archive, setArchive] = useState<Product | null>(null);
+    [archive, setArchive] = useState<Product | null>(null),
+    [showArchived,setShowArchived]=useState(false);
   const items = state.products
     .filter(
       (p) =>
-        !p.archived &&
+        (showArchived ? p.archived : !p.archived) &&
         (cat === "All categories" || p.category === cat) &&
         (supplier === "All suppliers" || p.supplier === supplier) &&
         `${p.name} ${p.sku} ${p.description}`
@@ -488,7 +490,7 @@ export default function Inventory({
           <h1>Inventory</h1>
           <p>Every item, every location. One clear picture.</p>
         </div>
-        <div className="actions">
+        <div className="actions"><button className="button" onClick={()=>setShowArchived(!showArchived)}>{showArchived?"Show active items":"Show archived items"}</button>
           <button className="button" onClick={() => setMove("new")}>
             <ArrowRightLeft size={16} />
             Stock movement
@@ -626,9 +628,9 @@ export default function Inventory({
                           <ArrowRightLeft size={15} />
                         </button>
                         <button
-                          aria-label={`Archive ${p.name}`}
+                          aria-label={`${p.archived ? "Restore" : "Archive"} ${p.name}`}
                           className="icon-button"
-                          onClick={() => setArchive(p)}
+                          onClick={() => { if(p.archived){dispatch({type:"restore",id:p.id});notify("Item restored");}else setArchive(p); }}
                         >
                           <Archive size={15} />
                         </button>
@@ -674,8 +676,7 @@ export default function Inventory({
         <Modal title="Archive inventory item" onClose={() => setArchive(null)}>
           <p>
             {archive.name} will leave the active catalog. Its stock and audit
-            history remain in reports. Open orders and recipes using it must be
-            updated before further processing.
+            history are retained. Restore it from “Show archived items” to receive open orders or produce recipes that use it.
           </p>
           <div className="form-actions">
             <button className="button" onClick={() => setArchive(null)}>
