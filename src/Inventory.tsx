@@ -62,16 +62,16 @@ export function ProductForm({
       onClose={onClose}
     >
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           try {
-            dispatch({
+            if (!await dispatch({
               type: "product",
               product: p,
               quantity: initial,
               location: loc === "All locations" ? "Storage room" : loc,
               actor,
-            });
+            })) return;
             onSaved();
           } catch (err) {
             setError((err as Error).message);
@@ -279,10 +279,10 @@ export function MovementForm({
       onClose={onClose}
     >
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           try {
-            dispatch({
+            if (!await dispatch({
               type: "move",
               product: id,
               location: source,
@@ -292,7 +292,7 @@ export function MovementForm({
               unit: unit || p.unit,
               reason,
               actor,
-            });
+            })) return;
             onSaved();
           } catch (err) {
             setError((err as Error).message);
@@ -630,7 +630,7 @@ export default function Inventory({
                         <button
                           aria-label={`${p.archived ? "Restore" : "Archive"} ${p.name}`}
                           className="icon-button"
-                          onClick={() => { if(p.archived){dispatch({type:"restore",id:p.id});notify("Item restored");}else setArchive(p); }}
+                          onClick={async () => { if(p.archived){if (!await dispatch({type:"restore",id:p.id})) return;notify("Item restored");}else setArchive(p); }}
                         >
                           <Archive size={15} />
                         </button>
@@ -684,8 +684,8 @@ export default function Inventory({
             </button>
             <button
               className="button danger"
-              onClick={() => {
-                dispatch({ type: "archive", id: archive.id });
+              onClick={async () => {
+                if (!await dispatch({ type: "archive", id: archive.id })) return;
                 setArchive(null);
                 notify("Item archived");
               }}

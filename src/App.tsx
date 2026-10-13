@@ -393,8 +393,8 @@ function Workspace() {
             </button>
             <button
               className="button primary"
-              onClick={() => {
-                reset();
+              onClick={async () => {
+                if (!await reset()) return;
                 setResetOpen(false);
                 notify("Original demo data restored");
               }}

@@ -22,6 +22,7 @@ export function useDemoStorage<T>(key: string, seed: () => T, validate: Guard<T>
   });
   const [data,setData] = useState<T>(initial.data), [warning,setWarning] = useState(initial.warning);
   const current = useRef(data);
+  const pendingWrites = useRef(0);
   useEffect(() => {
     const listen = (event: StorageEvent) => {
       if(event.key !== key || !event.newValue) return;
@@ -41,6 +42,8 @@ export function useDemoStorage<T>(key: string, seed: () => T, validate: Guard<T>
       return Promise.resolve(false);
     }
     current.current=candidate;setData(candidate);
+    pendingWrites.current++;
+    document.getElementById('root')?.setAttribute('aria-busy','true');
     return navigator.locks.request(key+'-write', () => {
       let latest=before;
       try {const raw=localStorage.getItem(key);if(raw && !reset)latest=decode(raw,validate,migrate);}
@@ -60,6 +63,9 @@ export function useDemoStorage<T>(key: string, seed: () => T, validate: Guard<T>
       try {const raw=localStorage.getItem(key);if(raw){const latest=decode(raw,validate,migrate);current.current=latest;setData(latest);}}catch {/* Keep the last valid view. */}
       setWarning(error instanceof Error?error.message:'The change was not saved. Please retry.');
       return false;
+    }).finally(()=>{
+      pendingWrites.current--;
+      document.getElementById('root')?.setAttribute('aria-busy',String(pendingWrites.current>0));
     });
   }
   function exportRecovery() {

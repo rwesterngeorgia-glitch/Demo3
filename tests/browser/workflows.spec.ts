@@ -1,10 +1,12 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import type { State } from "../../src/types";
-const persisted = (page: Page) =>
-  page.evaluate(() =>
+const persisted = async (page: Page) => {
+  await expect(page.locator('#root')).not.toHaveAttribute('aria-busy','true');
+  return page.evaluate(() =>
     JSON.parse(localStorage.getItem("stockpilot-demo-v1")!),
   ) as Promise<State>;
+};
 const init = async (page: Page) => {
   await page.goto("/app/inventory");
   await page

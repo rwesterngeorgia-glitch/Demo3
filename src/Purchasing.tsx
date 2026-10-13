@@ -260,12 +260,12 @@ export default function Purchasing({
                           {o.status === "Draft" && (
                             <button
                               className="button compact"
-                              onClick={() => {
-                                dispatch({
+                              onClick={async () => {
+                                if (!await dispatch({
                                   type: "orderStatus",
                                   id: o.id,
                                   status: "Ordered",
-                                });
+                                })) return;
                                 notify("Purchase order placed in demo");
                               }}
                             >
@@ -332,12 +332,12 @@ export default function Purchasing({
             </button>
             <button
               className="button danger"
-              onClick={() => {
-                dispatch({
+              onClick={async () => {
+                if (!await dispatch({
                   type: "orderStatus",
                   id: cancel.id,
                   status: "Canceled",
-                });
+                })) return;
                 setCancel(null);
                 notify("Order canceled");
               }}
@@ -395,10 +395,10 @@ function OrderForm({
   return (
     <Modal title="Create purchase order" onClose={onClose}>
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           try {
-            dispatch({
+            if (!await dispatch({
               type: "order",
               order: {
                 id: `PO-${Date.now().toString().slice(-6)}`,
@@ -409,7 +409,7 @@ function OrderForm({
                 created: new Date().toISOString(),
                 lines,
               },
-            });
+            })) return;
             onSaved();
           } catch (err) {
             setError((err as Error).message);
@@ -568,16 +568,16 @@ function ReceiveForm({
       onClose={onClose}
     >
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           try {
-            dispatch({
+            if (!await dispatch({
               type: "receive",
               id: order.id,
               quantities: values,
               receipt,
               actor,
-            });
+            })) return;
             onSaved();
           } catch (err) {
             setError((err as Error).message);

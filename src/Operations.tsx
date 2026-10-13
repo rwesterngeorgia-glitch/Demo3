@@ -102,8 +102,8 @@ export default function Operations({
                   <button
                     className={`task-row ${t.done ? "done" : ""}`}
                     key={t.id}
-                    onClick={() => {
-                      dispatch({ type: "task", id: t.id });
+                    onClick={async () => {
+                      if (!await dispatch({ type: "task", id: t.id })) return;
                       notify(t.done ? "Task reopened" : "Task completed");
                     }}
                     aria-pressed={t.done}
@@ -147,10 +147,10 @@ export default function Operations({
               Post an announcement
             </h2>
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
                 try {
-                  dispatch({ type: "note", text: note, actor });
+                  if (!await dispatch({ type: "note", text: note, actor })) return;
                   setNote("");
                   notify("Announcement saved");
                 } catch (err) {

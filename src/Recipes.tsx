@@ -206,15 +206,15 @@ export default function Recipes({
                 </div>
                 <button
                   className="button"
-                  onClick={() => {
+                  onClick={async () => {
                     try {
-                      dispatch({
+                      if (!await dispatch({
                         type: "consume",
                         id: r.id,
                         servings,
                         location: productionLoc,
                         actor,
-                      });
+                      })) return;
                       setSelected(null);
                       notify("Recipe ingredients consumed and logged");
                     } catch (err) {
@@ -289,10 +289,10 @@ function RecipeForm({
   return (
     <Modal title={recipe ? "Edit recipe" : "Create recipe"} onClose={onClose}>
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           try {
-            dispatch({ type: "recipe", recipe: r });
+            if (!await dispatch({ type: "recipe", recipe: r })) return;
             onSaved();
           } catch (err) {
             setError((err as Error).message);
