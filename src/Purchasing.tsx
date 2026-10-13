@@ -260,12 +260,12 @@ export default function Purchasing({
                           {o.status === "Draft" && (
                             <button
                               className="button compact"
-                              onClick={() => {
-                                dispatch({
+                              onClick={async () => {
+                                if (!await dispatch({
                                   type: "orderStatus",
                                   id: o.id,
                                   status: "Ordered",
-                                });
+                                })) return;
                                 notify("Purchase order placed in demo");
                               }}
                             >
@@ -300,7 +300,7 @@ export default function Purchasing({
       {create && (
         <OrderForm
           initialLocation={loc === "All locations" ? "Storage room" : loc}
-          supplier={supplierFilter === "All suppliers" ? "s1" : supplierFilter}
+          supplier={supplierFilter === "All suppliers" ? state.products.find(p=>!p.archived)?.supplier || state.suppliers[0]?.id || "" : supplierFilter}
           actor={actor}
           onClose={() => setCreate(false)}
           onSaved={() => {
@@ -332,12 +332,12 @@ export default function Purchasing({
             </button>
             <button
               className="button danger"
-              onClick={() => {
-                dispatch({
+              onClick={async () => {
+                if (!await dispatch({
                   type: "orderStatus",
                   id: cancel.id,
                   status: "Canceled",
-                });
+                })) return;
                 setCancel(null);
                 notify("Order canceled");
               }}
@@ -371,7 +371,7 @@ function OrderForm({
   const options = state.products.filter(
     (p) => !p.archived && p.supplier === sid,
   );
-  const line = (id = options[0]?.id) => ({
+  const line = (id = options[0]?.id || "") => ({
     product: id,
     quantity: 1,
     received: 0,
@@ -395,10 +395,10 @@ function OrderForm({
   return (
     <Modal title="Create purchase order" onClose={onClose}>
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           try {
-            dispatch({
+            if (!await dispatch({
               type: "order",
               order: {
                 id: `PO-${Date.now().toString().slice(-6)}`,
@@ -409,7 +409,7 @@ function OrderForm({
                 created: new Date().toISOString(),
                 lines,
               },
-            });
+            })) return;
             onSaved();
           } catch (err) {
             setError((err as Error).message);
@@ -425,9 +425,9 @@ function OrderForm({
                 setSid(id);
                 const p = state.products.find(
                   (p) => p.supplier === id && !p.archived,
-                )!;
+                );
                 setLines([
-                  { product: p.id, quantity: 1, received: 0, cost: p.cost },
+                  { product: p?.id || "", quantity: 1, received: 0, cost: p?.cost || 0 },
                 ]);
               }}
             >
@@ -455,6 +455,7 @@ function OrderForm({
           </Field>
         </div>
         <div className="line-list">
+          {!options.length && <p className="callout">No active items for this supplier. Choose another supplier or restore its items from “Show archived items” in Inventory.</p>}
           {lines.map((l, i) => (
             <div key={i} className="order-line">
               <Field label={`Item ${i + 1}`}>
@@ -567,16 +568,16 @@ function ReceiveForm({
       onClose={onClose}
     >
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           try {
-            dispatch({
+            if (!await dispatch({
               type: "receive",
               id: order.id,
               quantities: values,
               receipt,
               actor,
-            });
+            })) return;
             onSaved();
           } catch (err) {
             setError((err as Error).message);
